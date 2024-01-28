@@ -3,7 +3,7 @@ import mujoco
 import matplotlib.pyplot as plt
 
 LINK_SIZE = 0.01
-FLOOR_POSITION = -0.22
+FLOOR_POSITION = -0.2145
 K = 0.06                    # [N/m] tendon's stiffness
 
 ELECTRONICS_BOX = dict(
@@ -70,7 +70,7 @@ def link_xml(link, tab=1, j_geom_name='', joint_limit=''):
     if joint_limit:
         joint_limit = f'limited="true" range="{joint_limit}"'
     return f"""<body name="{link['name']}" pos="0 {link['y0']} {link['z0']}">
-    {tabs}<geom type="box" size="{LINK_SIZE}" fromto="0 0 0 0 {y} {z}" material="links" />
+    {tabs}<geom type="box" size="{LINK_SIZE}" fromto="0 0 0 0 {y} {z}" material="links"/>
     {tabs}<geom type="cylinder" size="{LINK_SIZE} {LINK_SIZE}" pos="0 0 0" euler="0 90 0" material="joints" />
     {tabs}<geom {j_geom_name}type="cylinder" size="{LINK_SIZE} {LINK_SIZE}" pos="0 {y} {z}" euler="0 90 0" material="joints" />
     {tabs}<joint name="{link['joint_name']}" pos="0 0 0" axis="1 0 0" {joint_limit}/>"""
@@ -78,8 +78,8 @@ def link_xml(link, tab=1, j_geom_name='', joint_limit=''):
 
 xml = f"""
 <mujoco>
-    <option gravity="0 0 -9"/>
-    
+    <option gravity="0 0 -9.8"/>
+    <compiler balanceinertia="true" autolimits="true"/>
     <default>
         <site rgba="1 1 1 1"/>
         <tendon stiffness="{K}" width=".003"/>
@@ -108,7 +108,7 @@ xml = f"""
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1" />
         <body name="world_base" pos="0 0 0">
             <geom type="capsule" size="0.01 0.01" pos="0 0 0" material="virtual_elements"/>
-            <joint type="free"/>
+            <joint type="slide" axis="0 0 1"/>
             <body name="{ELECTRONICS_BOX['name']}" pos="0 0 0">
                 <geom type="box" size="{ELECTRONICS_BOX['x']/2} {ELECTRONICS_BOX['y']/2} {ELECTRONICS_BOX['z']/2}" rgba="0.75 0.75 0.75 0.3"/>
                 <geom name="j0" type="cylinder" size="{LINK_SIZE} {LINK_SIZE}" pos="0 {LINK_1['y0']} {-LINK_1['z0']}" euler="0 90 0" material="joints" />
@@ -169,7 +169,6 @@ xml = f"""
         <spatial name="flexor_tendon_knee" material="flexor_tendon_knee">
             <site site="s01"/>
             <geom geom="j0" sidesite="s01"/>
-            <site site="s02"/>
             <site site="s21"/>
         </spatial>
         <spatial name="extensor_tendon_1" material="extensor_tendon_1">
