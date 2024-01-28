@@ -1,0 +1,31 @@
+<mujoco>
+    <default>
+        <site type="sphere" rgba="1 0 0 1" size="0.005"/>
+        <tendon rgba="0 1 0 1" stiffness="1000" damping="100"/>
+    </default>
+    
+    <visual>
+        <headlight diffuse=".7 .7 .7"/>
+    </visual>
+
+    <worldbody>
+        <site name="origin0" pos="0 0 0"/>
+        <body name="mass" pos="0 0 -0.3">
+            <freejoint/>
+            <geom name="massgeom" type="box" size="0.05 0.05 0.05" pos="0 0.05 0" mass="1"/>
+            <site name="insertion0" pos="0 0 0.05"/>
+        </body>
+    </worldbody>
+
+    <tendon>
+        <spatial name="rope0">
+            <site site="origin0"/>
+            <site site="insertion0"/>
+        </spatial>
+    </tendon>
+
+    <sensor>
+        <force name="tension0" site="origin0"/>
+    </sensor>
+
+</mujoco>
