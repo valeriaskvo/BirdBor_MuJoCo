@@ -167,11 +167,6 @@ XML_TEMPLATE = f"""
             <geom geom="j5" sidesite="s51"/>
             <site site="s61"/>
         </spatial>
-        <spatial name="flexor_tendon_knee" material="flexor_tendon_knee">
-            <site site="s01"/>
-            <geom geom="j0" sidesite="s02"/>
-            <site site="s21"/>
-        </spatial>
         <spatial name="extensor_tendon_1" material="extensor_tendon_1">
             <site site="s22"/>
             <site site="s24"/>
