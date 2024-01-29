@@ -1,10 +1,10 @@
 
 <mujoco>
-    <option gravity="0 0 -9.8"/>
+    <option gravity="0 0 -9.8" solver="CG"/>
     <compiler balanceinertia="true" autolimits="true"/>
     <default>
         <site rgba="1 1 1 1"/>
-        <tendon stiffness="0.06" width=".003"/>
+        <tendon stiffness="0.06" width=".003" damping="0.1"/>
     </default>    
     
     <visual>
@@ -31,12 +31,13 @@
         <body name="base" pos="0 0 0">
             <joint type="slide" axis="0 0 1"/>
             <geom type="box" size="0.025 0.0475 0.05775" rgba="0.75 0.75 0.75 0.3"/>
-            <body name="knee_joint" pos="0 -0.02 0.022">
-                <joint name="joint_0" pos="0 0 0" axis="1 0 0"/>
-                <geom name="j0" type="cylinder" size="0.02 0.01" pos="0 0 0" euler="0 90 0" material="joints" />
-                <site name="s01" pos="0 0.02 0"/>
-                <site name="s02" pos="0 0 0.02"/>
+            <body name="knee_joint" pos="0 -0.03 0.032">
+                <joint name="joint_0" type="slide" pos="0 0 0" axis="0 0 1" range="-0.01 0.1" damping="1"/>
+                <geom type="capsule" size="0.0033333333333333335 0.0033333333333333335" pos="0 0 0" euler="0 90 0" material="joints" />
+                <site name="s01" pos="0 0 0"/>
             </body>
+            <geom name="j0" type="cylinder" size="0.01 0.01" pos="0 -0.02 0.022" euler="0 90 0" material="joints" />
+            <site name="s02" pos="0 -0.03 0.022"/>    
             <site name="s03" pos="0 -0.0475 0"/>
             <body name="link_1" pos="0 -0.02 -0.022">
     			<geom type="box" size="0.01" fromto="0 0 0 0 0.02083493313075292 -0.07775702901627" material="links"/>
@@ -96,10 +97,17 @@
     </equality>
 
     <actuator>
-        <general name="knee_motor" joint="joint_0"/>
-        <general name="hip_motor" joint="joint_1"/>
+        <position name="knee_motor" joint="joint_0" kp="10"/>
+        <position name="hip_motor" joint="joint_1" kp="100"/>
     </actuator>
-        
+    
+    <tendon>
+        <spatial name="flexor_tendon_knee" material="flexor_tendon_knee" stiffness="500">
+            <site site="s01"/>
+            <geom geom="j0" sidesite="s02"/>
+            <site site="s21"/>
+        </spatial>
+    </tendon>
     <tendon>
         <spatial name="global_tendor" material="global_tendor">
             <site site="s03"/>
@@ -112,11 +120,6 @@
             <site site="s51"/>
             <geom geom="j5" sidesite="s51"/>
             <site site="s61"/>
-        </spatial>
-        <spatial name="flexor_tendon_knee" material="flexor_tendon_knee">
-            <site site="s01"/>
-            <geom geom="j0" sidesite="s02"/>
-            <site site="s21"/>
         </spatial>
         <spatial name="extensor_tendon_1" material="extensor_tendon_1">
             <site site="s22"/>

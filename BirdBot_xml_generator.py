@@ -78,11 +78,11 @@ def link_xml(link, tab=1, j_geom_name='', joint_limit=''):
 
 XML_TEMPLATE = f"""
 <mujoco>
-    <option gravity="0 0 -9.8"/>
+    <option gravity="0 0 -9.8" solver="CG"/>
     <compiler balanceinertia="true" autolimits="true"/>
     <default>
         <site rgba="1 1 1 1"/>
-        <tendon stiffness="{K}" width=".003"/>
+        <tendon stiffness="{K}" width=".003" damping="0.1"/>
     </default>    
     
     <visual>
@@ -109,12 +109,13 @@ XML_TEMPLATE = f"""
         <body name="{ELECTRONICS_BOX['name']}" pos="0 0 0">
             <joint type="slide" axis="0 0 1"/>
             <geom type="box" size="{ELECTRONICS_BOX['x']/2} {ELECTRONICS_BOX['y']/2} {ELECTRONICS_BOX['z']/2}" rgba="0.75 0.75 0.75 0.3"/>
-            <body name="knee_joint" pos="0 {LINK_1['y0']} {-LINK_1['z0']}">
-                <joint name="joint_0" pos="0 0 0" axis="1 0 0"/>
-                <geom name="j0" type="cylinder" size="{LINK_SIZE*2} {LINK_SIZE}" pos="0 0 0" euler="0 90 0" material="joints" />
-                <site name="s01" pos="0 {LINK_SIZE*2} 0"/>
-                <site name="s02" pos="0 0 {LINK_SIZE*2}"/>
+            <body name="knee_joint" pos="0 {LINK_1['y0']-LINK_SIZE} {-LINK_1['z0']+LINK_SIZE}">
+                <joint name="joint_0" type="slide" pos="0 0 0" axis="0 0 1" range="-{LINK_SIZE} 0.1" damping="1"/>
+                <geom type="capsule" size="{LINK_SIZE/3} {LINK_SIZE/3}" pos="0 0 0" euler="0 90 0" material="joints" />
+                <site name="s01" pos="0 0 0"/>
             </body>
+            <geom name="j0" type="cylinder" size="{LINK_SIZE} {LINK_SIZE}" pos="0 {LINK_1['y0']} {-LINK_1['z0']}" euler="0 90 0" material="joints" />
+            <site name="s02" pos="0 {LINK_1['y0']-LINK_SIZE} {-LINK_1['z0']}"/>    
             <site name="s03" pos="0 {-ELECTRONICS_BOX['y']/2} 0"/>
             {link_xml(LINK_1, 3, 'j1')}
                 <site name="s11" pos="0 0 0"/>
@@ -150,10 +151,17 @@ XML_TEMPLATE = f"""
     </equality>
 
     <actuator>
-        <general name="knee_motor" joint="joint_0"/>
-        <general name="hip_motor" joint="joint_1"/>
+        <position name="knee_motor" joint="joint_0" kp="10"/>
+        <position name="hip_motor" joint="joint_1" kp="100"/>
     </actuator>
-        
+    
+    <tendon>
+        <spatial name="flexor_tendon_knee" material="flexor_tendon_knee" stiffness="500">
+            <site site="s01"/>
+            <geom geom="j0" sidesite="s02"/>
+            <site site="s21"/>
+        </spatial>
+    </tendon>
     <tendon>
         <spatial name="global_tendor" material="global_tendor">
             <site site="s03"/>

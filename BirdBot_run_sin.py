@@ -1,10 +1,10 @@
 import mujoco
 from mujoco import viewer
-from numpy import sin, arcsin, deg2rad
+from numpy import cos, deg2rad
 import matplotlib.pyplot as plt
 import time
 
-SIMULATION_TIME = 10            # [sec]
+SIMULATION_TIME = 15            # [sec]
 XML_FILE = 'BirdBot.xml'
 
 model = mujoco.MjModel.from_xml_path(XML_FILE)
@@ -13,10 +13,8 @@ x = []
 dx = []
 t = []
 
-shift = deg2rad(30)
-A = deg2rad(60)
-w = 5
-phase = arcsin(shift/A)
+A = deg2rad(100)
+w = 10
 tc_0 = 0
 
 with mujoco.viewer.launch_passive(model, data) as viewer:
@@ -25,10 +23,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer:
     while viewer.is_running() and time.time() - start < SIMULATION_TIME:
         step_start = time.time()
 
-        if step_start - start > 1:
+        if step_start - start > 5:
             if tc_0 == 0:
                 tc_0 = step_start
-            data.qpos[2] = shift - A*sin((step_start - tc_0)*w + phase)
+            data.ctrl[1] = A*((1 - cos((step_start - tc_0)*w))/2)
 
         mujoco.mj_step(model, data)
 
